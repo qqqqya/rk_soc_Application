@@ -1,0 +1,6 @@
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/CMakeFiles/05_mcu_uart.dir
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/CMakeFiles/edit_cache.dir
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/CMakeFiles/rebuild_cache.dir
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir

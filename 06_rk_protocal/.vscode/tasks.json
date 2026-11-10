@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "RK3576: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--parallel",
+                "4"
+            ],
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "RK3576: Build and Upload",
+            "type": "process", 
+            "command": "scp",
+            "args": [
+                "${command:cmake.launchTargetPath}",     // 动态获取本地 ELF 路径
+                "root@192.168.100.2:/root/"              // 目标路径只需写到目录，scp会自动保留原文件名
+            ],
+            "dependsOn": [
+                "RK3576: Build"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+
+{
+    // 源码目录  build构建目录
+    "cmake.sourceDirectory": "${workspaceFolder}",//${workspaceFolder} 会自动指向 VSCode 当前打开的工程根目录
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+
+    // 生成器类型  Unix Makefiles
+    "cmake.generator": "Unix Makefiles",
+
+    // 是否在打开工程时自动配置
+    "cmake.configureOnOpen": false,
+
+    // 配置参数 使用 Debug 构建类型
+    "cmake.configureSettings": {
+        "CMAKE_BUILD_TYPE": "Debug"
+    },
+//  C/C++ 扩展获取 CMake 的编译配置，改善 IntelliSense
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+}

@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/tony/myir_yan/Code/05_uart_ctrl/05_rk_uart/build",
+  "command": "/usr/bin/aarch64-linux-gnu-gcc -D_DEFAULT_SOURCE  -g -std=c11 -Wall -Wextra -Wpedantic -g3 -o CMakeFiles/rk_app_uart.dir/main.c.o -c /home/tony/myir_yan/Code/05_uart_ctrl/05_rk_uart/main.c",
+  "file": "/home/tony/myir_yan/Code/05_uart_ctrl/05_rk_uart/main.c",
+  "output": "CMakeFiles/rk_app_uart.dir/main.c.o"
+}
+]

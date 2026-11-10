@@ -1,0 +1,2 @@
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/Core/Src/system_stm32g4xx.c:181:6:SystemInit	4	static
+/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/Core/Src/system_stm32g4xx.c:230:6:SystemCoreClockUpdate	32	static

@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/tony/myir_yan/Code/05_uart_ctrl/06_rk_protocal/build",
+  "command": "/usr/bin/aarch64-linux-gnu-gcc -D_DEFAULT_SOURCE  -g -std=c11 -Wall -Wextra -Wpedantic -g3 -o CMakeFiles/protocol_rk.dir/main.c.o -c /home/tony/myir_yan/Code/05_uart_ctrl/06_rk_protocal/main.c",
+  "file": "/home/tony/myir_yan/Code/05_uart_ctrl/06_rk_protocal/main.c",
+  "output": "CMakeFiles/protocol_rk.dir/main.c.o"
+}
+]

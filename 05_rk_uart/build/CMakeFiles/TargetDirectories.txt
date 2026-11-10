@@ -1,0 +1,3 @@
+/home/tony/myir_yan/Code/05_uart_ctrl/05_rk_uart/build/CMakeFiles/rk_app_uart.dir
+/home/tony/myir_yan/Code/05_uart_ctrl/05_rk_uart/build/CMakeFiles/edit_cache.dir
+/home/tony/myir_yan/Code/05_uart_ctrl/05_rk_uart/build/CMakeFiles/rebuild_cache.dir
