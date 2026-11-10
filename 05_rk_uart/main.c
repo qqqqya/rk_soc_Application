@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    tcdrain(fd);// 等待发送完成
+    tcdrain(fd);// 等待发送完成--drain 疏通之后 才写入完成
 
     // 5. 等待 STM32 回显
     uint8_t rx[128];
@@ -293,7 +293,8 @@ int main(int argc, char *argv[])
             .events = POLLIN    // 监听可读事件         
         };
 
-        int ret = poll(&pfd, 1, 2000);
+        int ret = poll(&pfd, 1, 2000);// 监听串口设备  s6  2s超时
+        //poll 告诉我们有数据可以读取（针对的是fd 事件为in  Poll INput）
 
         if (ret == 0)
         {
@@ -311,6 +312,7 @@ int main(int argc, char *argv[])
             break;
         }
 
+        //poll 返回值大于0 表示有数据可以读取--才进行读取操作
         ssize_t n = read(fd,
                          rx + received,
                          sizeof(rx) - received);// 从串口设备读取数据
