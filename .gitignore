@@ -18,6 +18,16 @@
 *.bin
 *.Bak
 
+# 构建产物：每台机器各自 cmake 生成，不同步
+build/
+build-*/
+*.o
+*.a
+*.so
+*.elf
+# Windows 本机的 IntelliSense 配置：只在本机生效，不影响 Linux
+.vscode/c_cpp_properties.json
+
 # Local CMake build trees generated for the stage-5 Bootloader.
 /Bootloader/build/
 /Application/build/

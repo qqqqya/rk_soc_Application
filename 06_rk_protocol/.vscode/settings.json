@@ -14,6 +14,7 @@
     "cmake.configureSettings": {
         "CMAKE_BUILD_TYPE": "Debug"
     },
+    "idf.currentSetup": "D:\\esp\\v6.0.3\\esp-idf",
 //  C/C++ 扩展获取 CMake 的编译配置，改善 IntelliSense
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    // "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

@@ -31,7 +31,16 @@ uint16_t proto_crc16_modbus(
 /* ===============================
  * 2. 数据帧打包
  * =============================== */
-
+/**
+ * @brief 打包数据帧
+ * @param cmd 命令字
+ * @param seq 序号
+ * @param data 数据指针
+ * @param data_len 数据长度---决定数据帧的总长度
+ * @param out 输出指针
+ * @param out_capacity 输出缓冲区容量
+ * @return int 打包后的字节数，-1 错误
+ */
 int proto_encode(
     uint8_t cmd,
     uint8_t seq,
@@ -47,7 +56,7 @@ int proto_encode(
         return -1;
     }
 
-    uint8_t len = 2 + data_len;
+    uint8_t len = 2 + data_len;// 数据帧长度 2字节长度+数据长度
 
     size_t total_len = len + 5;
 
@@ -89,7 +98,10 @@ int proto_encode(
 /* ===============================
  * 3. 初始化解析器
  * =============================== */
-
+/**
+ * @brief 重置解析器 内部的索引、预期总长度、状态等
+ * @param parser 解析器指针
+ */
 static void parser_reset(proto_parser_t *parser)
 {
     parser->index = 0;
@@ -120,7 +132,7 @@ int proto_parser_push(
     if (parser == NULL || out == NULL)
         return -3;
 
-    switch (parser->state)
+    switch (parser->state)// 解析器状态
     {
         /* 等待第一个帧头 */
         case 0:
@@ -128,7 +140,7 @@ int proto_parser_push(
             if (byte == PROTO_SOF1)
             {
                 parser->buffer[0] = byte;
-                parser->index = 1;
+                parser->index = 1;// 记录当前字节在buffer中的索引（未写入的下一位），0是SOF1
                 parser->state = 1;
             }
 
@@ -140,7 +152,7 @@ int proto_parser_push(
             if (byte == PROTO_SOF2)
             {
                 parser->buffer[1] = byte;
-                parser->index = 2;
+                parser->index = 2;// 记录当前字节在buffer中的索引，1是SOF2
                 parser->state = 2;
             }
             else if (byte == PROTO_SOF1)
@@ -156,7 +168,7 @@ int proto_parser_push(
             break;
 
         /* 读取长度 */
-        case 2:
+        case 2://等待长度字节  len
 
             if (byte < 2 ||
                 byte > PROTO_MAX_BODY_LEN)
@@ -173,12 +185,12 @@ int proto_parser_push(
                 return -2;
             }
 
-            parser->buffer[2] = byte;
+            parser->buffer[2] = byte;// 前两个是startofframe  第三个也就是这个byte=len
 
-            parser->expected_total = byte + 5;
+            parser->expected_total = byte + 5; // 数据帧总长度 2字节帧头+len+数据长度+2字节CRC
 
-            parser->index = 3;
-            parser->state = 3;
+            parser->index = 3;//
+            parser->state = 3;// 接收剩余数据和 CRC 状态 
 
             break;
 
@@ -191,18 +203,20 @@ int proto_parser_push(
                 return -2;
             }
 
-            parser->buffer[parser->index++] = byte;
+            parser->buffer[parser->index++] = byte;//持续接收数据，直到收到CRC字节
 
+            // >=  检查是否接收完整数据帧
             if (parser->index >= parser->expected_total)
             {
-                uint8_t len = parser->buffer[2];
+                uint8_t len = parser->buffer[2];// 数据帧长度 len
 
                 uint16_t crc_calc =
                     proto_crc16_modbus(
                         &parser->buffer[2],
                         len + 1
-                    );
+                    );// 计算CRC
 
+                // 收到的CRC数据  低字节在前
                 uint16_t crc_recv =
                     parser->buffer[parser->expected_total - 2] |
                     ((uint16_t)parser->buffer[parser->expected_total - 1] << 8);
@@ -214,16 +228,17 @@ int proto_parser_push(
                 }
 
                 /* CRC 正确，提取数据 */
+                // 将parser未经过解析的字节流中的数据提取出来，赋值给out中
                 out->cmd = parser->buffer[3];
                 out->seq = parser->buffer[4];
 
-                out->data_len = len - 2;
+                out->data_len = len - 2;//去掉cmd和seq字节
 
                 if (out->data_len > 0)
                 {
                     memcpy(
                         out->data,
-                        &parser->buffer[5],
+                        &parser->buffer[5],//2字节帧头+len+cmd+seq  -5字节跳过
                         out->data_len
                     );
                 }

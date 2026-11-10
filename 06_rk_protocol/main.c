@@ -114,11 +114,11 @@ int main(int argc, char *argv[])
     int tx_len = proto_encode(
         CMD_PING,
         1,
-        payload,
+        payload,    // 数据
         sizeof(payload) - 1,
         tx_frame,
         sizeof(tx_frame)
-    );
+    );// 编码数据  生成数据帧
 
     if (tx_len < 0)
     {
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
             break;
         }
 
-        //poll 返回值大于0 表示有数据可以读取--才进行读取操作
+        //poll 返回值大于0 有了pollin event 表示有数据可以读取--才进行读取操作
         ssize_t n = read(fd,
                          rx + received,
                          sizeof(rx) - received);// 从串口设备读取数据
