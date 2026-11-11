@@ -1,3 +1,0 @@
-/home/tony/myir_yan/Code/05_uart_ctrl/06_rk_protocol/build/CMakeFiles/protocol_rk.dir
-/home/tony/myir_yan/Code/05_uart_ctrl/06_rk_protocol/build/CMakeFiles/edit_cache.dir
-/home/tony/myir_yan/Code/05_uart_ctrl/06_rk_protocol/build/CMakeFiles/rebuild_cache.dir

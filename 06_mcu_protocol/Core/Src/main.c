@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "protocol.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,7 +39,10 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+static proto_parser_t g_parser;   // 未解析数据
+static proto_frame_t g_rx_frame;  // 解析过后数据
 
+static uint8_t g_rx_byte;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -89,6 +93,8 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  proto_parser_init(&g_parser);//初始化协议解析器
+
   uint8_t rx_data; 
   /* USER CODE END 2 */
 
@@ -96,58 +102,70 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    HAL_StatusTypeDef status =
+        HAL_UART_Receive(
+            &huart1,
+            &g_rx_byte,
+            1,
+            100
+        );
+
+    if (status == HAL_OK)
+    {
+        int result = proto_parser_push(   //解析数据
+            &g_parser,
+            g_rx_byte,
+            &g_rx_frame
+        );
+
+        if (result == 1)
+        {
+            /* 收到完整数据帧 */
+
+            if (g_rx_frame.cmd == CMD_PING &&
+                g_rx_frame.data_len == 5 &&
+                memcmp(g_rx_frame.data, "HELLO", 5) == 0)
+            {
+                const uint8_t ack_data[] = {'O', 'K'};
+
+                uint8_t tx_frame[PROTO_MAX_FRAME_LEN];
+
+                int tx_len = proto_encode(
+                    CMD_PING_ACK,
+                    g_rx_frame.seq,
+                    ack_data,
+                    sizeof(ack_data),
+                    tx_frame,
+                    sizeof(tx_frame)
+                );
+
+                if (tx_len > 0)
+                {
+                    HAL_UART_Transmit(
+                        &huart1,
+                        tx_frame,
+                        (uint16_t)tx_len,
+                        100
+                    );
+                }
+            }
+        }
+        else if (result == -1)
+        {
+            /* CRC 错误 */
+        }
+        else if (result == -2)
+        {
+            /* 数据长度错误 */
+        }
+
+    }
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // HAL_UART_Transmit(&huart1, "hello\r\n", 7, 0xFFFF);
-    // rx_data = HAL_UART_Receive(&huart1, &rx_data, 1, 0xFFFF);
-    // HAL_Delay(1000);
-    // HAL_UART_Transmit(&huart1, &rx_data, 1, 0xFFFF);
-#if 0
-    // 1. 接收数据：传入 rx_data 的地址 &rx_data
-    // 注意：用一个变量接收返回值来判断是否接收成功（可选）
-    HAL_StatusTypeDef status = HAL_UART_Receive(&huart1, &rx_data, 1, HAL_MAX_DELAY);
-    // 3. 延时（根据你的需求保留，但通常回显不加延时以防丢失后续数据）
-    HAL_Delay(3000); 
-
-    HAL_UART_Transmit(&huart1, "hello\r\n", 7, 0xFFFF);//等待3秒，接收到数据之后才会发送回显hello
-
-    // 2. 如果接收成功，则将数据发送回去（回显）
-    if (status == HAL_OK)
-    {
-        HAL_UART_Transmit(&huart1, &rx_data, 1, HAL_MAX_DELAY);
-    }
-#endif
-#if 0
-    // 1. 接收数据：传入 rx_data 的地址 &rx_data
-    // 注意：用一个变量接收返回值来判断是否接收成功（可选）
-    HAL_StatusTypeDef status = HAL_UART_Receive(&huart1, &rx_data, 3, HAL_MAX_DELAY);//等待接收到数据之后才会发送回显hello
-    // 3. 延时（根据你的需求保留，但通常回显不加延时以防丢失后续数据）
-    HAL_Delay(1000); 
-
-    HAL_UART_Transmit(&huart1, "hello\r\n", 7, 10);
-
-    // 2. 如果接收成功，则将数据发送回去（回显）
-    if (status == HAL_OK)
-    {
-        HAL_UART_Transmit(&huart1, &rx_data, 1, 10);
-    }
-#endif
-    // uint8_t rx_byte;
-    // 等待 RK3576 发送一个字节
-    if (HAL_UART_Receive(&huart1,
-                         &rx_data,
-                         1,
-                         HAL_MAX_DELAY) == HAL_OK)
-    {
-        // 收到什么，就原样发送回去
-        HAL_UART_Transmit(&huart1,
-                          &rx_data,
-                          1,
-                          1000);
-    }
-
-  }
+ }
   /* USER CODE END 3 */
 }
 

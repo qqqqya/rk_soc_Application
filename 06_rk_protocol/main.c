@@ -148,6 +148,104 @@ int main(int argc, char *argv[])
     // tcdrain(fd);// 等待发送完成--drain 疏通之后 才写入完成
 
     // 5. 等待 STM32 回显
+    // 接收mcu数据的响应
+    proto_parser_t parser;
+    proto_frame_t rx_frame;
+
+    proto_parser_init(&parser);
+
+    int got_ack = 0;
+
+    while (!got_ack)
+    {
+        struct pollfd pfd = {
+            .fd = fd,
+            .events = POLLIN
+        };
+
+        int ret = poll(&pfd, 1, 2000);
+
+        if (ret == 0)
+        {
+            printf("RX timeout!\n");
+            break;
+        }
+
+        if (ret < 0)
+        {
+            if (errno == EINTR)
+                continue;
+
+            perror("poll");
+            break;
+        }
+
+        if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL))
+        {
+            printf("UART device error\n");
+            break;
+        }
+
+        if (!(pfd.revents & POLLIN))
+            continue;
+
+        uint8_t rx_buf[128];
+
+        ssize_t n = read(fd, rx_buf, sizeof(rx_buf));
+
+        if (n < 0)
+        {
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+
+            perror("read");
+            break;
+        }
+
+        for (ssize_t i = 0; i < n; i++)
+        {
+            int result = proto_parser_push(
+                &parser,
+                rx_buf[i],
+                &rx_frame
+            );
+
+            if (result == 1)
+            {
+                printf("RX CMD=0x%02X SEQ=%u LEN=%u\n",
+                    rx_frame.cmd,
+                    rx_frame.seq,
+                    rx_frame.data_len);
+
+                if (rx_frame.cmd == CMD_PING_ACK &&
+                    rx_frame.seq == 1 &&
+                    rx_frame.data_len == 2 &&
+                    memcmp(rx_frame.data, "OK", 2) == 0)
+                {
+                    got_ack = 1;
+                    break;
+                }
+            }
+            else if (result == -1)
+            {
+                printf("CRC ERROR!\n");
+            }
+            else if (result == -2)
+            {
+                printf("FRAME LENGTH ERROR!\n");
+            }
+        }
+    }
+
+    if (got_ack)
+    {
+        printf("PROTOCOL COMMUNICATION PASS!\n");
+    }
+    else
+    {
+        printf("PROTOCOL COMMUNICATION FAIL!\n");
+    }    
+#if 0    
     uint8_t rx[128];
     size_t received = 0;// 接收到的数据数量
 
@@ -185,7 +283,7 @@ int main(int argc, char *argv[])
         if (n > 0)
             received += (size_t)n;      //读取数据数量增加
     }
-
+#endif
     // 6. 打印接收到的数据
     printf("RX: ");
     fwrite(rx, 1, received, stdout);
