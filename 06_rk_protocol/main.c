@@ -1,6 +1,3 @@
-
-#define _DEFAULT_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,9 +11,9 @@
 
 #include "protocol.h"
 
-const uint8_t payload[] = "HELLO-RK\r\n";
+const uint8_t payload[] = "HELLO-RK\r\n";//data_len = 10 最后len=17 2字节帧头+len+数据长度+2字节CRC
 
-uint8_t tx_frame[PROTO_MAX_FRAME_LEN];
+uint8_t tx_frame[PROTO_MAX_FRAME_LEN];// 发送的配置好的数据帧
 
 //// 配置串口：115200，8N1，无流控
 static int uart_config(int fd)
@@ -102,12 +99,12 @@ int main(int argc, char *argv[])
     }
 
     // 3. 准备发送数据
-    const char tx[] = "PING_FROM_RK\r\n";
-    const size_t tx_len = sizeof(tx) - 1;
-
     tcflush(fd, TCIFLUSH);// 清空接收缓冲区
+    // const char tx[] = "PING_FROM_RK\r\n";
+    // const size_t tx_len = sizeof(tx) - 1;
 
-    printf("TX: %s", tx);
+
+    // printf("TX: %s", tx);
 
     // 4. 发送数据
 
@@ -115,7 +112,7 @@ int main(int argc, char *argv[])
         CMD_PING,
         1,
         payload,    // 数据
-        sizeof(payload) - 1,
+        sizeof(payload) - 1,    // 总共10字节+/0   
         tx_frame,
         sizeof(tx_frame)
     );// 编码数据  生成数据帧
@@ -149,10 +146,10 @@ int main(int argc, char *argv[])
 
     // 5. 等待 STM32 回显
     // 接收mcu数据的响应
-    proto_parser_t parser;
-    proto_frame_t rx_frame;
+    proto_parser_t parser;  // parser 未解析数据
+    proto_frame_t rx_frame; // 解析过后的数据
 
-    proto_parser_init(&parser);
+    proto_parser_init(&parser);// 初始化解析器
 
     int got_ack = 0;
 
@@ -180,19 +177,21 @@ int main(int argc, char *argv[])
             break;
         }
 
+        /* 判断poll事件 是否为错误 */
         if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL))
         {
             printf("UART device error\n");
             break;
         }
 
-        if (!(pfd.revents & POLLIN))
+        if (!(pfd.revents & POLLIN))// 没有数据可读就跳出循环
             continue;
 
+        /* 接收mcu数据 */
         uint8_t rx_buf[128];
 
         ssize_t n = read(fd, rx_buf, sizeof(rx_buf));
-
+        //接收（读取）到的数据字节数。
         if (n < 0)
         {
             if (errno == EINTR || errno == EAGAIN)
@@ -202,6 +201,7 @@ int main(int argc, char *argv[])
             break;
         }
 
+        /* 解析数据帧mcu数据 */
         for (ssize_t i = 0; i < n; i++)
         {
             int result = proto_parser_push(
@@ -210,8 +210,10 @@ int main(int argc, char *argv[])
                 &rx_frame
             );
 
+            // 解析所有数据之后 result 为1
             if (result == 1)
             {
+                /* 解析成功 进行打印 */
                 printf("RX CMD=0x%02X SEQ=%u LEN=%u\n",
                     rx_frame.cmd,
                     rx_frame.seq,
@@ -285,19 +287,18 @@ int main(int argc, char *argv[])
     }
 #endif
     // 6. 打印接收到的数据
-    printf("RX: ");
-    fwrite(rx, 1, received, stdout);
+    // printf("RX: ");
+    // fwrite(rx, 1, received, stdout);
 
-    if (received != tx_len ||
-        memcmp(tx, rx, tx_len) != 0)
-    {
-        printf("\nUART COMMUNICATION FAIL!\n");
-        close(fd);
-        return 1;
-    }
-    printf("\nUART COMMUNICATION PASS!\n");
+    // if (received != tx_len ||
+    //     memcmp(tx, rx, tx_len) != 0)
+    // {
+    //     printf("\nUART COMMUNICATION FAIL!\n");
+    //     close(fd);
+    //     return 1;
+    // }
+    // printf("\nUART COMMUNICATION PASS!\n");
     close(fd);// 关闭串口设备
 
     return 0;
 }
-

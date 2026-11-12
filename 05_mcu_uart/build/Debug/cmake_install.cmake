@@ -1,4 +1,4 @@
-# Install script for directory: /home/tony/myir_yan/05_uart_ctrl/05_mcu_uart
+# Install script for directory: /home/tony/myir_yan/Code/05_uart_ctrl/05_mcu_uart
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/cmake/stm32cubemx/cmake_install.cmake")
+  include("/home/tony/myir_yan/Code/05_uart_ctrl/05_mcu_uart/build/Debug/cmake/stm32cubemx/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/tony/myir_yan/Code/05_uart_ctrl/05_mcu_uart/build/Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

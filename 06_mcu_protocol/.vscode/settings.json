@@ -1,0 +1,4 @@
+{
+    "stm32cube-ide-core.LocalOnly": true,
+    "stm32cube-ide-core.synchronizePdscRepositoriesOnStartup": false
+}

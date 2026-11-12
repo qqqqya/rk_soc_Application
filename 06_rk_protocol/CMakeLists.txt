@@ -31,7 +31,18 @@ endif()
 # ==================================================
 add_executable(${APP_EXE_NAME}
     main.c
+    protocol/protocol.c
 )
+# 头文件搜索路径，让 main.c 能找到 protocol.h
+target_include_directories(${APP_EXE_NAME} PRIVATE
+    protocol
+)
+# # Add sources to executable
+# target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+#     # Add user sources here
+#     protocol/protocol.c
+# )
+
 
 # GNU/Linux 特性宏，例如 cfmakeraw()
 target_compile_definitions(${APP_EXE_NAME} PRIVATE

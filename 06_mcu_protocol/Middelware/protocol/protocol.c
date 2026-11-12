@@ -124,10 +124,7 @@ void proto_parser_init(proto_parser_t *parser)
  * @param out proto_frame_t 解析后的数据帧指针
  * @return int 0 成功，-1 错误，-2 数据帧长度错误，-3 解析器指针或数据帧指针为空
  */
-int proto_parser_push(
-    proto_parser_t *parser,
-    uint8_t byte,
-    proto_frame_t *out)
+int proto_parser_push(    proto_parser_t *parser,    uint8_t byte,    proto_frame_t *out)
 {
     if (parser == NULL || out == NULL)
         return -3;
@@ -234,6 +231,9 @@ int proto_parser_push(
 
                 out->data_len = len - 2;//去掉cmd和seq字节
 
+                /* 之前的parser解析器中只是将byte存储在parser中，没有解析数据 
+                   后面这里则是将parser中的数据提取出来，赋值给out中
+                */
                 if (out->data_len > 0)
                 {
                     memcpy(

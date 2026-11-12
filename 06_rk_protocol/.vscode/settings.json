@@ -1,5 +1,7 @@
 
 {
+    "stm32cube-ide-core.LocalOnly": true,
+    "stm32cube-ide-core.synchronizePdscRepositoriesOnStartup": false,
     // 源码目录  build构建目录
     "cmake.sourceDirectory": "${workspaceFolder}",//${workspaceFolder} 会自动指向 VSCode 当前打开的工程根目录
     "cmake.buildDirectory": "${workspaceFolder}/build",

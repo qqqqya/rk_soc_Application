@@ -1,4 +1,4 @@
-# Install script for directory: /home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/cmake/stm32cubemx
+# Install script for directory: /home/tony/myir_yan/Code/05_uart_ctrl/05_mcu_uart/cmake/stm32cubemx
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

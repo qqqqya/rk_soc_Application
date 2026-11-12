@@ -28,9 +28,7 @@ uint16_t proto_crc16_modbus(
     return crc;
 }
 
-/* ===============================
- * 2. 数据帧打包
- * =============================== */
+
 /**
  * @brief 打包数据帧
  * @param cmd 命令字
@@ -41,14 +39,14 @@ uint16_t proto_crc16_modbus(
  * @param out_capacity 输出缓冲区容量
  * @return int 打包后的字节数，-1 错误
  */
-int proto_encode(
+ int proto_encode(
     uint8_t cmd,
     uint8_t seq,
     const uint8_t *data,
     uint8_t data_len,
     uint8_t *out,
     size_t out_capacity)
-{
+{// * 2. 数据帧打包
     if (out == NULL ||
         data_len > PROTO_MAX_DATA_LEN ||
         (data_len > 0 && data == NULL))
@@ -108,7 +106,10 @@ static void parser_reset(proto_parser_t *parser)
     parser->expected_total = 0;
     parser->state = 0;
 }
-
+/**
+ * @brief 初始化解析器
+ * @param parser 解析器指针
+ */
 void proto_parser_init(proto_parser_t *parser)
 {
     memset(parser, 0, sizeof(*parser));

@@ -62,7 +62,7 @@ rule C_COMPILER__STM32_Drivers_unscanned_Debug
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake --regenerate-during-build -S/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart -B/home/tony/myir_yan/05_uart_ctrl/05_mcu_uart/build/Debug
+  command = /usr/bin/cmake --regenerate-during-build -S/home/tony/myir_yan/Code/05_uart_ctrl/05_mcu_uart -B/home/tony/myir_yan/Code/05_uart_ctrl/05_mcu_uart/build/Debug
   description = Re-running CMake...
   generator = 1
 

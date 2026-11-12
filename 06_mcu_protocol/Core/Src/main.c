@@ -112,17 +112,18 @@ int main(void)
 
     if (status == HAL_OK)
     {
-        int result = proto_parser_push(   //解析数据
+        int result = proto_parser_push(   //解析数据  每次收到数据成功之后马上解析数据 到g_rx_frame array中
             &g_parser,
             g_rx_byte,
             &g_rx_frame
         );
 
-        if (result == 1)
+        if (result == 1)//完整数据全部解析完成 才会return 1
         {
             /* 收到完整数据帧 */
 
             if (g_rx_frame.cmd == CMD_PING &&
+                // g_rx_frame.data_len == 10 &&  // 数据长度必须是10字节
                 g_rx_frame.data_len == 5 &&
                 memcmp(g_rx_frame.data, "HELLO", 5) == 0)
             {
@@ -130,7 +131,8 @@ int main(void)
 
                 uint8_t tx_frame[PROTO_MAX_FRAME_LEN];
 
-                int tx_len = proto_encode(
+                // 编码回复数据帧
+                int tx_len = proto_encode(      //编码回复ok
                     CMD_PING_ACK,
                     g_rx_frame.seq,
                     ack_data,
@@ -139,6 +141,7 @@ int main(void)
                     sizeof(tx_frame)
                 );
 
+                // 发送回复数据帧
                 if (tx_len > 0)
                 {
                     HAL_UART_Transmit(

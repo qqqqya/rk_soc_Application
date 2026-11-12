@@ -1,0 +1,57 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "stlinkgdbtarget",
+            "request": "launch",
+            "name": "STM32 Debug (Debug ELF)",
+            "origin": "snippet",
+            "cwd": "${workspaceFolder}",
+            "deviceName": "STM32G474RET6",
+            "deviceCore": "Cortex-M4",
+            "gdb": "${env:HOME}/.local/share/stm32cube/bundles/gnu-gdb-for-stm32/14.3.1+st.2/bin/arm-none-eabi-gdb",
+            "serverExe": "ST-LINK_gdbserver",
+            "serverCwd": "${env:HOME}/.local/share/stm32cube/bundles/stlink-gdbserver/7.14.0+st.2/bin",
+            "serverCubeProgPath": "${env:HOME}/.local/share/stm32cube/bundles/programmer/2.23.0/bin",
+            "serverInterface": "SWD",
+            "serverReset": "Software system reset",
+            "serverRtos": {
+                "enabled": false
+            },
+            "preBuild": "",
+            "preLaunchTask": "Build Debug",
+            "runEntry": "main",
+            "imagesAndSymbols": [
+                {
+                    "imageFileName": "${workspaceFolder}/build/Debug/05_mcu_uart.elf",
+                    "symbolFileName": "${workspaceFolder}/build/Debug/05_mcu_uart.elf"
+                }
+            ]
+        },
+        {
+            "name": "STM32: OpenOCD (managed server)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/05_mcu_uart.elf",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build Debug",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb-multiarch",
+            "debugServerPath": "/usr/bin/openocd",
+            "debugServerArgs": "-f \"${workspaceFolder}/openocd.cfg\" -c \"gdb_port 3333\" -c \"tcl_port disabled\" -c \"telnet_port disabled\"",
+            "serverStarted": "Listening on port 3333 for gdb connections",
+            "filterStdout": true,
+            "filterStderr": true,
+            "serverLaunchTimeout": 20000,
+            "customLaunchSetupCommands": [
+                { "text": "-target-select remote 127.0.0.1:3333" },
+                { "text": "-interpreter-exec console \"monitor reset halt\"" },
+                { "text": "-target-download" },
+                { "text": "-interpreter-exec console \"monitor reset halt\"" },
+                { "text": "-break-insert -t main" }
+            ],
+            "launchCompleteCommand": "exec-continue"
+        }
+    ]
+}

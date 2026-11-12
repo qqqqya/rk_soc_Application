@@ -7,7 +7,7 @@
             "type": "cppdbg",
             "request": "launch",
 
-            "program": "${workspaceFolder}/build/rk_app",
+            "program": "${workspaceFolder}/build/protocol_rk",
             "cwd": "${workspaceFolder}",
 
             "MIMode": "gdb",

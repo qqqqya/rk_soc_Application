@@ -73,7 +73,7 @@ static int uart_write_all(int fd, const uint8_t *data, size_t len)
 
 int main(int argc, char *argv[])
 {
-    const char *device = "/dev/ttyS3";
+    const char *device = "/dev/ttyS6";
 
     if (argc > 1)
         device = argv[1];
