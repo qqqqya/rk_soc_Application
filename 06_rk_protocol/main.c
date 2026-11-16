@@ -11,7 +11,7 @@
 
 #include "protocol.h"
 
-const uint8_t payload[] = "HELLO-RK\r\n";//data_len = 10 最后len=17 2字节帧头+len+数据长度+2字节CRC
+const uint8_t payload[] = "HELLO-RK\r\n";//data_len = 10 len=17 2字节帧头+len+cmd+seq+数据长度+2字节CRC
 
 uint8_t tx_frame[PROTO_MAX_FRAME_LEN];// 发送的配置好的数据帧
 

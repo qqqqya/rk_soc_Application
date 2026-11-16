@@ -29,7 +29,24 @@ endif()
 # ==================================================
 # 3. 编译选项
 # ==================================================
-add_executable(${APP_EXE_NAME}
+add_executable(${APP_EXE_NAME})
+
+# # 新增一个独立的协议测试程序
+    add_executable(protocol_test
+        # main.c############################
+        tests/test_protocol.c   #内部有main函数的入口 就不用再添加main.c
+        protocol/protocol.c
+    )
+
+    # 为测试程序添加协议头文件搜索路径
+    target_include_directories(protocol_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/protocol
+    )
+
+
+# Add sources to executable
+target_sources(${APP_EXE_NAME} PRIVATE
+    # Add user sources here
     main.c
     protocol/protocol.c
 )
@@ -37,11 +54,6 @@ add_executable(${APP_EXE_NAME}
 target_include_directories(${APP_EXE_NAME} PRIVATE
     protocol
 )
-# # Add sources to executable
-# target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-#     # Add user sources here
-#     protocol/protocol.c
-# )
 
 
 # GNU/Linux 特性宏，例如 cfmakeraw()

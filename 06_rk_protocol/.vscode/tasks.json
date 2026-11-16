@@ -18,8 +18,13 @@
             "type": "process", 
             "command": "scp",
             "args": [
-                "${command:cmake.launchTargetPath}",     // 动态获取本地 ELF 路径
-                "root@192.168.100.2:/root/"              // 目标路径只需写到目录，scp会自动保留原文件名
+                // "${command:cmake.launchTargetPath}",     // 动态获取本地 ELF 路径
+                // "root@192.168.100.2:/root/",              // 目标路径只需写到目录，scp会自动保留原文件名
+
+                // 传输多个elf文件
+                "${workspaceFolder}/build/protocol_rk",
+                "${workspaceFolder}/build/protocol_test",
+                "root@192.168.100.2:/root/"
             ],
             "dependsOn": [
                 "RK3576: Build"
@@ -30,6 +35,6 @@
                 "isDefault": true
             },
             "problemMatcher": []
-        }
+        },
     ]
 }

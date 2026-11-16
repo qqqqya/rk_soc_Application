@@ -55,8 +55,8 @@ uint16_t proto_crc16_modbus(
     }
 
     uint8_t len = 2 + data_len;// 数据帧长度 2字节长度+数据长度
-
-    size_t total_len = len + 5;
+/*对于"HELLO-RK\r\n";//data_len = 10 最后len=17 2字节帧头+len+cmd+seq+数据长度+2字节CRC*/
+    size_t total_len = len + 5;  //len+ cmd+ seq+ 2字节CRC
 
     if (out_capacity < total_len)
         return -1;
@@ -115,21 +115,15 @@ void proto_parser_init(proto_parser_t *parser)
     memset(parser, 0, sizeof(*parser));
 }
 
-/* ===============================
- * 4. 字节流解析
- * =============================== */
+
 /**
  * @brief 输入一个字节，尝试解析一帧
  * @param parser 解析器指针--存的是接收到的未解析的字节流
  * @param byte 待解析的字节
  * @param out proto_frame_t 解析后的数据帧指针
- * @return int 0 成功，-1 错误，-2 数据帧长度错误，-3 解析器指针或数据帧指针为空
+ * @return int 0 成功，剩余data 和crc ret=1    ；；    -1 错误，-2 数据帧长度错误，-3 解析器指针或数据帧指针为空
  */
-int proto_parser_push(
-    proto_parser_t *parser,
-    uint8_t byte,
-    proto_frame_t *out)
-{
+int proto_parser_push(    proto_parser_t *parser,    uint8_t byte,  proto_frame_t *out){
     if (parser == NULL || out == NULL)
         return -3;
 
