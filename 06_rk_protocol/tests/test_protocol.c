@@ -125,12 +125,12 @@ static void test_concatenated_frames(test_stats_t *stats){
     size_t stream_length = 0;
     for (uint8_t seq = 1; seq <= 3; seq++) {
         // 打包三帧 
-        int n = make_ping(seq, stream + stream_length, sizeof(stream) - stream_length);
+        int n = make_ping(seq, stream + stream_length, sizeof(stream) - stream_length);//213-0  213-12
         if (n <= 0) {
             check_result(stats, "粘包测试打包成功", 0);
             return;
         }
-        stream_length += (size_t)n;
+        stream_length += (size_t)n;// 累加打包后的字节数  +12  +12  +12
     }
 
     proto_parser_t parser;
@@ -140,7 +140,7 @@ static void test_concatenated_frames(test_stats_t *stats){
     proto_parser_init(&parser);
 
     for (size_t i = 0; i < stream_length; i++) {
-        int ret = proto_parser_push(&parser, stream[i], &result);
+        int ret = proto_parser_push(&parser, stream[i], &result);// 解析一个字节
         if (ret == 1) {
             frames++;
             if (frames > 3 || !is_ping(&result, (uint8_t)frames)) sequence_ok = 0;
@@ -170,10 +170,10 @@ static void test_crc_error_and_recovery(test_stats_t *stats){
     unsigned frames = 0, errors = 0;
     proto_parser_init(&parser);
 
-    feed_bytes(&parser, bad, (size_t)bad_length, &result, &frames, &errors);
-    check_result(stats, "CRC 错误帧不被接受", frames == 0 && errors == 1);
+    feed_bytes(&parser, bad, (size_t)bad_length, &result, &frames, &errors);    //解析出来错误帧 error++
+    check_result(stats, "CRC 错误帧不被接受", frames == 0 && errors == 1);  
 
-    feed_bytes(&parser, good, (size_t)good_length, &result, &frames, &errors);
+    feed_bytes(&parser, good, (size_t)good_length, &result, &frames, &errors);  //解析出来正常帧 frames++
     check_result(stats, "CRC 错误后可解析下一帧", frames == 1 && is_ping(&result, 5));
 }
 
@@ -192,7 +192,7 @@ static void test_invalid_length_and_recovery(test_stats_t *stats){
     unsigned frames = 0, errors = 0;
     proto_parser_init(&parser);
 
-    feed_bytes(&parser, malformed, sizeof(malformed), &result, &frames, &errors);
+    feed_bytes(&parser, malformed, sizeof(malformed), &result, &frames, &errors);//解析出来  只有三个数据--还有个非法长度ff
     check_result(stats, "非法 LEN 能被拒绝", frames == 0 && errors == 1);
 
     feed_bytes(&parser, good, (size_t)length, &result, &frames, &errors);
@@ -201,11 +201,12 @@ static void test_invalid_length_and_recovery(test_stats_t *stats){
 
 /* 测试 6：验证 64 字节合法最大负载，以及 65 字节被拒绝。 */
 static void test_payload_boundary(test_stats_t *stats){
-    uint8_t payload[PROTO_MAX_DATA_LEN + 1] = {0};
+    uint8_t payload[PROTO_MAX_DATA_LEN + 1] = {0};//65字节  超过最大
     uint8_t wire[PROTO_MAX_FRAME_LEN] = {0};
-    for (size_t i = 0; i < sizeof(payload); i++) payload[i] = (uint8_t)i;
+    for (size_t i = 0; i < sizeof(payload); i++) payload[i] = (uint8_t)i;//填充数据
 
-    int length = proto_encode(CMD_PING, 7, payload, PROTO_MAX_DATA_LEN, wire, sizeof(wire));
+    //测试64字节数据正常编码
+    int length = proto_encode(CMD_PING, 7, payload, PROTO_MAX_DATA_LEN, wire, sizeof(wire));//payload 但是长度64Byte
     check_result(stats, "64 字节 DATA 能正常编码", length == PROTO_MAX_FRAME_LEN);
 
     if (length > 0) {
@@ -213,12 +214,13 @@ static void test_payload_boundary(test_stats_t *stats){
         proto_frame_t result = {0};
         unsigned frames = 0, errors = 0;
         proto_parser_init(&parser);
-        feed_bytes(&parser, wire, (size_t)length, &result, &frames, &errors);
+        feed_bytes(&parser, wire, (size_t)length, &result, &frames, &errors);//解析到good  wire数组里面
         check_result(stats, "64 字节 DATA 可完整解析", frames == 1 && errors == 0 &&
                      result.data_len == PROTO_MAX_DATA_LEN &&
                      memcmp(result.data, payload, PROTO_MAX_DATA_LEN) == 0);
     }
 
+    //测试65字节数据被拒绝
     int oversized = proto_encode(CMD_PING, 8, payload, PROTO_MAX_DATA_LEN + 1, wire, sizeof(wire));
     check_result(stats, "65 字节 DATA 会被拒绝", oversized < 0);
 }
@@ -233,7 +235,7 @@ int main(void){
     test_concatenated_frames(&stats);    //测试粘包解析成功
     //------------
     // test_crc_error_and_recovery(&stats);
-    // test_invalid_length_and_recovery(&stats);
+    // test_invalid_length_and_recovery(&stats);    //测试长度错误解析成功
     // test_payload_boundary(&stats);
     printf("\nSUMMARY: %u passed, %u failed\n", stats.passed, stats.failed);
     return stats.failed == 0 ? 0 : 1;
