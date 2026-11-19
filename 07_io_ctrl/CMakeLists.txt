@@ -72,13 +72,8 @@ target_compile_options(${APP_EXE_NAME} PRIVATE
 # 4. 链接选项
 # ==================================================
 # option(RK_UART_STATIC_LINK "Static link executable" ON)
-# 链接 libgpiod（gpiod.h 对应的用户态库）
-# target_link_libraries(${APP_EXE_NAME} PRIVATE
-#     gpiod
-# )
-# target_link_directories(${APP_EXE_NAME} PRIVATE /usr/lib/aarch64-linux-gnu)
 
-# target_link_libraries(${APP_EXE_NAME} PRIVATE gpiod)
+# target_link_directories(${APP_EXE_NAME} PRIVATE /usr/lib/aarch64-linux-gnu)
 
 # if(RK_UART_STATIC_LINK)
 #     target_link_options(${APP_EXE_NAME} PRIVATE
@@ -86,26 +81,66 @@ target_compile_options(${APP_EXE_NAME} PRIVATE
 #     )
 # endif()
 
-# ==================================================
-# 4. ARM64 libgpiod 配置
-# ==================================================
+        # # ==================================================
+        # # 4. ARM64 libgpiod 配置
+        # # ==================================================
 
-# libgpiod 开发库的位置
-set(GPIOD_ROOT "/home/tony/rk3576-deps/gpiod")
+        # # libgpiod 开发库的位置
+        # set(GPIOD_ROOT "/home/tony/rk3576-deps/gpiod")
 
-# 头文件搜索路径
+        # # 头文件搜索路径
+        # target_include_directories(${APP_EXE_NAME} PRIVATE
+        #     "${GPIOD_ROOT}/include"
+        # )
+
+        # # 指定 ARM64 动态库的完整路径
+        # target_link_libraries(${APP_EXE_NAME} PRIVATE
+        #     "${GPIOD_ROOT}/lib/libgpiod.so"
+        # )
+
+        # # 本次实验先关闭静态链接
+        # option(RK_UART_STATIC_LINK "Static link executable" OFF)
+
+        # if(RK_UART_STATIC_LINK)
+        #     target_link_options(${APP_EXE_NAME} PRIVATE -static)
+        # endif()
+
+
+# ==============================
+# 3. 第三方 libgpiod 库
+# ==============================
+
+set(GPIOD_ROOT
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/gpiod"
+)
+
+# 添加第三方头文件搜索路径
 target_include_directories(${APP_EXE_NAME} PRIVATE
-    "${GPIOD_ROOT}/include"
+    ${GPIOD_ROOT}/include
 )
+# # 指定 ARM64 动态库的完整路径
+# target_link_libraries(${APP_EXE_NAME} PRIVATE
+#     "${GPIOD_ROOT}/lib/libgpiod.so"
+# )
 
-# 指定 ARM64 动态库的完整路径
+# 链接 ARM64 静态库    .a 文件
 target_link_libraries(${APP_EXE_NAME} PRIVATE
-    "${GPIOD_ROOT}/lib/libgpiod.so"
+    ${GPIOD_ROOT}/lib/libgpiod.a
 )
 
-# 本次实验先关闭静态链接
-option(RK_UART_STATIC_LINK "Static link executable" OFF)
+# ==============================
+# 4. 编译选项
+# ==============================
 
-if(RK_UART_STATIC_LINK)
-    target_link_options(${APP_EXE_NAME} PRIVATE -static)
-endif()
+target_compile_options(${APP_EXE_NAME} PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+    $<$<CONFIG:Debug>:-O0>
+    $<$<CONFIG:Debug>:-g3>
+)
+
+# 整个可执行程序采用静态链接
+target_link_options(${APP_EXE_NAME} PRIVATE
+    -static
+)
