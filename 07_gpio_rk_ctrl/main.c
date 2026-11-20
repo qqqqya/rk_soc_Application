@@ -63,7 +63,7 @@ static int write_sysfs(const char *path, const char *value){
         return -1;
     }
 
-    if (fputs(value, fp) == EOF){
+    if (fputs(value, fp) == EOF){//和第一版类似 那里用的write函数
         perror("fputs");
         fclose(fp);
         return -1;
@@ -118,18 +118,18 @@ static int key_debounce(struct gpiod_line *key_line){
 
     struct timespec timeout = {
         .tv_sec = 0,
-        .tv_nsec = DEBOUNCE_MS * 1000000L
+        .tv_nsec = DEBOUNCE_MS * 1000000L       //30ms 10^6
     };
 
     struct gpiod_line_event event;
 
     while (g_running){
 
-        // 等待消抖期间是否又出现新的边沿
+        // 等待消抖期间是否又出现新的边沿---也就是等待30ms事件
+        // 如果电平稳定 则是-30ms内不应该出现新的边沿事件，就认为电平稳定
         int ret = gpiod_line_event_wait(key_line, &timeout);
 
-        if (ret == 0){
-            // 连续30ms没有新事件，认为电平稳定
+        if (ret == 0){            // 连续30ms没有新事件，认为电平稳定---在这里进行返回
             return gpiod_line_get_value(key_line);
         }
 
@@ -142,15 +142,18 @@ static int key_debounce(struct gpiod_line *key_line){
             return -1;
         }
 
-        // 仍然出现边沿，取走该事件
+        // 仍然出现边沿，取走该事件---赋值给指针结构体 event
+
         if (gpiod_line_event_read(key_line, &event) < 0){
+        // 读取事件后，会自动从事件队列中移除
+        // 所以，后续等待30ms时，会自动跳过这个事件
+        // 直到出现新的边沿事件
             perror("debounce read");
             return -1;
         }
 
         // 继续循环，重新等待完整的30ms
     }
-
     return -1;
 }
 
@@ -172,7 +175,7 @@ int main(void){
     struct gpiod_line *key_line = NULL;
 
     struct gpiod_line_event event;
-
+    //初始化变量--后面再进行赋值
     int last_value = -1;
     int current_value;
     int ret;
@@ -182,13 +185,13 @@ int main(void){
     int user_ready = 0;
 
     // 注册 Ctrl+C 退出信号处理函数
-    signal(SIGINT, signal_handler);
+    signal(SIGINT, signal_handler);///信号处理函数中只修改运行标志 g_running
     signal(SIGTERM, signal_handler);
 
     /* ---------- 4.1 打开 GPIO 控制器 ---------- */
 
     led_chip = gpiod_chip_open(LED_CHIP);
-    key_chip = gpiod_chip_open(KEY_CHIP);
+    key_chip = gpiod_chip_open(KEY_CHIP);//no byname V2新版本的
 
     if (led_chip == NULL || key_chip == NULL){
         perror("gpiod_chip_open");
@@ -228,12 +231,12 @@ int main(void){
 
     /* ---------- 4.5 初始化板载 LED ---------- */
 
-    // 关闭内核自动触发功能
-    if (write_sysfs(USER_TRIGGER, "none\n") < 0){
+    // 关闭内核自动触发功能---trigger 填none
+    if (write_sysfs(USER_TRIGGER, "none\n") < 0){//这里填heartbeat 怎么好像没有效果
         goto cleanup;
     }
 
-    user_ready = 1;
+    user_ready = 1;//用户userled-准备就绪
 
     printf("===== RK3576 GPIO EVENT DEMO =====\n");
     printf("LED : gpiochip3 offset 8\n");
@@ -242,8 +245,8 @@ int main(void){
 
     /* ---------- 4.6 获取按键初始状态 ---------- */
 
-    current_value = gpiod_line_get_value(key_line);
-
+    current_value = gpiod_line_get_value(key_line);//获取按键初始状态
+    printf("KEY initial value: %d\n", current_value);//////////
     if (current_value < 0){
         perror("get initial KEY value");
         goto cleanup;
@@ -251,7 +254,7 @@ int main(void){
 
     last_value = current_value;
 
-    // 按键低电平有效，因此需要取反
+    // 按键低电平有效，因此需要取反      !current_value
     if (led_control(led_line, !current_value) < 0){
         goto cleanup;
     }
@@ -269,20 +272,18 @@ int main(void){
             .tv_nsec = 250000000L
         };
 
-        ret = gpiod_line_event_wait(key_line, &timeout);
-
+        ret = gpiod_line_event_wait(key_line, &timeout);/* 等待按键事件 250ms------------*/
         if (ret == 0){
-            // 没有按键事件，继续等待
+            // 没有按键事件，继续等待  循环while  除非grunning标志位被handler修改
             continue;
         }
-
-        if (ret < 0){
+        if (ret < 0){//等待失败
             if (errno == EINTR){
                 continue;
             }
 
             perror("gpiod_line_event_wait");
-            goto cleanup;
+            goto cleanup;//如果等待失败，退出循环 清理资源
         }
 
         // 从内核事件队列中读取一个边沿事件
@@ -297,7 +298,7 @@ int main(void){
             printf("[EDGE] Rising edge\n");
         }
 
-        // 执行软件消抖，取得稳定的按键电平
+        // 执行软件消抖，取得稳定的按键电平---30ms内没有新的边沿事件
         current_value = key_debounce(key_line);
 
         if (!g_running){
@@ -309,28 +310,24 @@ int main(void){
             goto cleanup;
         }
 
-        // 如果消抖后的状态没有变化，不执行重复操作
+        // 也就是没有新的边沿事件，没有按键的变化
+        // 如果消抖后的状态没有变化，不执行重复操作--后面的就直接跳过即可
         if (current_value == last_value){
             continue;
         }
 
-        last_value = current_value;
+        last_value = current_value;//获取到新的按键电平，更新上一次的按键电平
 
         // 低电平：按键按下
-        if (current_value == 0){
-
+        if (current_value == 0){//低电平有效
             if (led_control(led_line, 1) < 0){
-                goto cleanup;
+                goto cleanup;//写入失败，退出循环 清理资源
             }
-
             printf("[KEY] PRESSED  -> LED ON\n");
-
         }else{
-
             if (led_control(led_line, 0) < 0){
                 goto cleanup;
             }
-
             printf("[KEY] RELEASED -> LED OFF\n");
         }
     }
@@ -350,11 +347,11 @@ cleanup:
     }
 
     // 退出前关闭板载 USER LED
-    if (user_ready){
-        write_sysfs(USER_BRIGHTNESS, "0\n");
+    if (user_ready){ // 如果用户userled-已经申请（也就是写入none--关闭内核自动触发功能）准备就绪
+        write_sysfs(USER_BRIGHTNESS, "0\n");//亮度设置为0  但依然是手动trigger
     }
 
-    if (key_requested){
+    if (key_requested){//if已经申请了按键事件，才释放资源
         gpiod_line_release(key_line);
     }
 
