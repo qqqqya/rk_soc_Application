@@ -210,7 +210,7 @@ int main(void){
 
     /* ---------- 4.3 申请输出 GPIO ---------- */
 
-    // "rk-led" 是 consumer 名称
+    // "rk-led" 是 consumer 名称-----io的模式申请了输出权限
     // 第三个参数0表示初始输出低电平
     if (gpiod_line_request_output(led_line, "rk-led", 0) < 0){
         perror("request LED output");

@@ -1,0 +1,11 @@
+
+[
+    {
+        "name": "RK3576-AArch64",
+        "compilers": {
+            "C": "/usr/bin/aarch64-linux-gnu-gcc"
+        },
+        // 工具链文件 和  交叉编译器路径
+        "toolchainFile": "/home/tony/myir_yan/04_cmake_gdb/toolchain-aarch64.cmake"
+    }
+]
